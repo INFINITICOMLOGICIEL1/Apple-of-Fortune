@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu des Pommes</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f8ff;
+            font-family: 'Impact', sans-serif;
+        }
+        h1 {
+            font-size: 2em; /* Taille réduite */
+            margin-bottom: 20px;
+            text-align: center; /* Centrer le texte */
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #4caf50;
+            background-color: #ffffff;
+            font-size: 2.5em; /* Taille des pommes augmentée */
+        }
+        .green-apple {
+            animation: rotate 2s; /* Animation de rotation */
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #countdown {
+            margin-top: 20px;
+            font-size: 0.8em;
+            text-align: center;
+        }
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Apple of Fortune by infiniti com logiciel</h1>
+    <div class="grid" id="grid"></div>
+    <button id="nextGame">Prochain jeu</button>
+    <div id="countdown"></div>
+    <script>
+        const initialLayout = [
+            ['🍎', '🍎', '🍏', '🍎', '🍏'],
+            ['🍏', '🍏', '🍎', '🍎', '🍎'],
+            ['🍎', '🍎', '🍏', '🍎', '🍏'],
+            ['🍎', '🍏', '🍎', '🍏', '🍎']
+        ];
+
+        const grid = document.getElementById('grid');
+        const nextGameButton = document.getElementById('nextGame');
+        const countdownDisplay = document.getElementById('countdown');
+
+        let countdownInterval;
+        let countdownTime = 30;
+        let firstPlay = true;
+
+        function startCountdown() {
+            countdownDisplay.innerText = `Prochain jeu dans ${countdownTime} secondes`;
+            countdownInterval = setInterval(() => {
+                countdownTime--;
+                countdownDisplay.innerText = `Prochain jeu dans ${countdownTime} secondes`;
+                if (countdownTime <= 0) {
+                    clearInterval(countdownInterval);
+                    nextGameButton.disabled = false;
+                    countdownDisplay.innerText = '';
+                }
+            }, 1000);
+        }
+
+        function shuffleGreenApples() {
+            const newLayout = initialLayout.map(line => {
+                const greenApples = line.filter(apple => apple === '🍏');
+                const redApples = line.filter(apple => apple === '🍎');
+                const newLine = [...redApples];
+
+                for (let i = 0; i < greenApples.length; i++) {
+                    const pos = Math.floor(Math.random() * (newLine.length + 1));
+                    newLine.splice(pos, 0, greenApples[i]);
+                }
+
+                return newLine;
+            });
+            return newLayout;
+        }
+
+        function createGrid() {
+            grid.innerHTML = '';
+            const layout = shuffleGreenApples();
+            layout.forEach(line => {
+                line.forEach(apple => {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    if (apple === '🍏') {
+                        const appleDiv = document.createElement('div');
+                        appleDiv.classList.add('green-apple');
+                        appleDiv.innerText = apple;
+                        cell.appendChild(appleDiv);
+                    } else {
+                        cell.innerText = apple;
+                    }
+                    grid.appendChild(cell);
+                });
+            });
+
+            if (firstPlay) {
+                firstPlay = false;
+            } else {
+                const greenApples = document.querySelectorAll('.green-apple');
+                greenApples.forEach(apple => {
+                    apple.classList.add('rotate');
+                });
+                setTimeout(() => {
+                    greenApples.forEach(apple => {
+                        apple.classList.remove('rotate');
+                    });
+                    startCountdown();
+                    nextGameButton.disabled = true;
+                    countdownTime = 30; // Reset countdown time
+                }, 2000); // 2 secondes de rotation avant de changer la disposition
+            }
+        }
+
+        nextGameButton.addEventListener('click', createGrid);
+
+        createGrid();
+    </script>
+</body>
+</html>
